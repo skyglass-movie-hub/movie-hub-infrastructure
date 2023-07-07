@@ -1,1 +1,2 @@
-# movie-hub-infrastructure
+# petclinic-online-infrastructure
+Petclinic Online AWS Infrastructure with Terraform
