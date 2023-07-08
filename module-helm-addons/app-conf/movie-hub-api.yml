@@ -1,39 +1,52 @@
 spring:
+  application:
+    name: movies-api
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/moviesdb
   keycloak:
-      server-url: http://keycloak-server:8080
+      server-url: http://localhost:8080
   security:
     oauth2:
-      client:
-        provider:
-          keycloak:
-            issuer-uri: ${spring.keycloak.server-url}/realms/company-services
       resourceserver:
         jwt:
           issuer-uri: ${spring.keycloak.server-url}/realms/company-services
-          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs     
-       
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
 
-server.forward-headers-strategy: framework          
+ ### server port
+server:
+  port: 8081
+  servlet:
+    context-path: /
+    forward-headers-strategy: framework
 
-springdoc:
-  # show-actuator: true
-  swagger-ui.path: /openapi/swagger-ui.html
-  api-docs.path: /openapi/v3/api-docs
-  packagesToScan: com.ivanfranchin.moviesapi
-  pathsToMatch: /**
-  cache.disabled: true
+jwt:
+  auth:
+    converter:
+      resource-id: movies-app
+      principal-attribute: preferred_username
 
-  swagger-ui:
-    # groups-order: DESC
-    # disable-swagger-default-url: true
-    oauth2-redirect-url: https://localhost:8443/webjars/swagger-ui/oauth2-redirect.html
-    oauth:
-      clientId: writer
-      # TODO: EXTERNALIZE!
-      clientSecret: secret
-      useBasicAuthenticationWithAccessCodeGrant: true
-  oAuthFlow:
-    authorizationUrl: http://keycloak-server:8080/oauth2/authorize
-    tokenUrl: http://keycloak-server:8080/oauth2/token
+app:
+  redirect-url:
+  cors:
+    allowed-origins: ${movies-app.base-url}
 
+movies-app:
+  base-url: http://localhost:3000
+  redirect-url: ${movies-app.base-url}/*
 
+management:
+  endpoints:
+    web:
+      exposure.include: beans, env, configprops, health, info, metrics, mappings
+  endpoint:
+    health:
+      show-details: always
+    env:
+      sensitive: false
+    configprops:
+      sensitive: false
+
+logging:
+  level:
+    org.springframework.security: DEBUG

@@ -1,3 +1,21 @@
 spring:
-  config:
-    import: configtree:/workspace/secrets/*/
+  keycloak:
+      server-url2: http://keycloak-server:8080
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri2: ${spring.keycloak.server-url}/realms/company-services
+      resourceserver:
+        jwt:
+          issuer-uri2: ${spring.keycloak.server-url}/realms/company-services
+          jwk-set-uri2: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs     
+       
+
+server.forward-headers-strategy: framework
+
+app:
+  cors:
+    allowed-origins: https://moviehub.greeta.net
+

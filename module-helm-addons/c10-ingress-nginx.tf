@@ -5,6 +5,18 @@ resource "kubernetes_ingress_v1" "ingress" {
     annotations = {
       "nginx.ingress.kubernetes.io/rewrite-target" = "/"
       "kubernetes.io/ingress.class" =  "nginx"
+      "nginx.ingress.kubernetes.io/server-snippet" =  <<EOF
+        location ~* "^/actuator" {
+          deny all;
+          return 403;
+        }
+      EOF
+      "nginx.ingress.kubernetes.io/proxy-set-header" = <<EOF
+        Host $host;
+        X-Real-IP $remote_addr;
+        X-Forwarded-For $proxy_add_x_forwarded_for;
+        X-Forwarded-Proto $scheme;
+      EOF      
     }
   }
 
@@ -22,133 +34,44 @@ resource "kubernetes_ingress_v1" "ingress" {
     }     
 
     rule {
-      host = "movie.greeta.net"
-
+      host = "keycloak.greeta.net"
       http {
 
         path {
+          backend {
+            service {
+              name = "keycloak-server"
+              port {
+                number = 8080
+              }
+            }
+          }
+
           path = "/"
           path_type = "Prefix"
-
-          backend {
-            service {
-              name = "keycloak-server"
-              port {
-                number = 8080
-              }
-            }
-          }
         }
-
-        path {
-          path = "/oauth2"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = "keycloak-server"
-              port {
-                number = 8080
-              }
-            }
-          }
-
-        }
-
-        path {
-          path = "/login"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = "keycloak-server"
-              port {
-                number = 8080
-              }
-            }
-          }
-
-        }
-
-        path {
-          path = "/error"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = "keycloak-server"
-              port {
-                number = 8080
-              }
-            }
-          }
-
-        }
-
-        path {
-          path = "/movie"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = "movies-api"
-              port {
-                number = 8081
-              }
-            }
-          }
-
-        } 
-
-        path {
-          path = "/actuator/health"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = "movies-api"
-              port {
-                number = 8081
-              }
-            }
-          }
-
-        }
-
-        path {
-          path = "/openapi"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = "movies-api"
-              port {
-                number = 8081
-              }
-            }
-          }
-
-        }  
-
-        path {
-          path = "/webjars"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = "movies-api"
-              port {
-                number = 8081
-              }
-            }
-          }
-
-        }                     
-
-
-
       }
-    } 
+    }
+
+    rule {
+      host = "movie.greeta.net"
+      http {
+
+        path {
+          backend {
+            service {
+              name = "movie-hub-gateway"
+              port {
+                number = 9000
+              }
+            }
+          }
+
+          path = "/"
+          path_type = "Prefix"
+        }
+      }
+    }
 
     rule {
       host = "moviehub.greeta.net"
@@ -157,9 +80,9 @@ resource "kubernetes_ingress_v1" "ingress" {
         path {
           backend {
             service {
-              name = "movies-ui"
+              name = "movies-api"
               port {
-                number = 4200
+                number = 8081
               }
             }
           }
@@ -168,7 +91,7 @@ resource "kubernetes_ingress_v1" "ingress" {
           path_type = "Prefix"
         }
       }
-    }      
+    }    
     
   }
 }

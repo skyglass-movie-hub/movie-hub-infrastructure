@@ -1,0 +1,91 @@
+server:
+  port: 9000
+  servlet:
+    context-path: /
+    forward-headers-strategy: framework
+
+spring:
+  application:
+    name: movie-hub-gateway
+  redis:
+    host: movie-hub-redis.default.svc.cluster.local
+    port: 6379
+    username: user
+    password: default
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            # redirect-uri: https://books-api.greeta.net/login/oauth2/code/keycloak
+            # client-secret: 1b1b19599c2264fd218c
+
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak-server:8080/realms/PolarBookshop
+            authorization-uri: https://keycloak.greeta.net/realms/PolarBookshop/protocol/openid-connect/auth
+            # token-uri: https://keycloak.greeta.net/realms/PolarBookshop/protocol/openid-connect/token
+      # resourceserver:
+      #   jwt:
+      #     issuer-uri: https://keycloak.greeta.net/realms/PolarBookshop
+      #     jwk-set-uri: https://keycloak.greeta.net/protocol/openid-connect/certs
+
+jwt:
+  auth:
+    converter:
+      resource-id: movies-app
+      principal-attribute: preferred_username
+
+keycloak:
+  auth-server-url: http://localhost:8080
+  realm: company-services
+  resource: movies-app
+  ssl-required: external
+  principal-attribute: preferred_username
+  use-resource-role-mappings: true
+
+keycloak-ext:
+  redirect-url: http://localhost:3000/*
+
+app:
+  cors:
+    allowed-origins: http://localhost:3000
+
+management:
+  endpoints:
+    web:
+      exposure.include: beans, env, health, info, metrics, mappings
+  endpoint:
+    health:
+      show-details: always      
+
+
+springdoc:
+  show-actuator: true
+  swagger-ui:
+    groups-order: DESC
+    disable-swagger-default-url: true
+
+logging:
+  level:
+    org.springframework.security: DEBUG    
+
+# springdoc:
+#   # show-actuator: true
+#   swagger-ui.path: /openapi/swagger-ui.html
+#   api-docs.path: /openapi/v3/api-docs
+#   packagesToScan: com.ivanfranchin.moviesapi
+#   pathsToMatch: /**
+#   cache.disabled: true
+
+  # swagger-ui:
+  #   # groups-order: DESC
+  #   # disable-swagger-default-url: true
+  #   oauth2-redirect-url: https://movies-api.greeta.net/webjars/swagger-ui/oauth2-redirect.html
+  #   oauth:
+  #     clientId: movies-app
+  #     # TODO: EXTERNALIZE!
+  #     useBasicAuthenticationWithAccessCodeGrant: true
+  # oAuthFlow:
+  #   authorizationUrl: http://keycloak-server:8080/oauth2/authorize
+  #   tokenUrl: http://keycloak-server:8080/oauth2/token
